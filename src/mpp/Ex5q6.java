@@ -63,6 +63,7 @@ class Node {
 
 	public Node(int id) {
 		this.id = id;
+		edges = new LinkedList<Edge>();
 	}
 
 	public void addEdge(Edge edge) {
@@ -89,7 +90,7 @@ class Node {
 }
 
 interface List<T> {
-	ListNode<T> add(T item);
+	T add(T item);
 }
 
 class ListNode<T> {
@@ -123,26 +124,26 @@ class LinkedList<T> implements List<T> {
 	}
 
 	@Override
-	public ListNode<T> add(T item) {
+	public T add(T item) {
 		lock.lock();
 		try {
 			ListNode<T> newNode = new ListNode<T>(item);
 			if (head == null) {
 				head = newNode;
-				return newNode;
+				return newNode.getValue();
 			} else {
 				ListNode<T> pred = null;
 				ListNode<T> curr = head;
 				while (curr != null) {
 					if (curr.getValue().equals(item)) {
-						return curr;
+						return curr.getValue();
 					}
 					pred = curr;
 					curr = curr.getNext();
 				}
 
 				pred.setNext(newNode);
-				return newNode;
+				return newNode.getValue();
 			}
 		} finally {
 			lock.unlock();

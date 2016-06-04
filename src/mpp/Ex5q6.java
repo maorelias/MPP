@@ -8,10 +8,11 @@ import java.util.concurrent.locks.ReentrantLock;
 public class Ex5q6 {
 
 	private static int numNodes;
-	private static volatile AtomicReferenceArray<List<Node>> graph;
+	public static volatile AtomicReferenceArray<List<Node>> GRAPH;
 
 	public static void main(String[] args) {
-		int numThreads = Integer.parseInt(args[0]);
+		int numberOfThreads = Integer.parseInt(args[0]);
+		WorkerThread[] threads = new WorkerThread[numberOfThreads];
 		String fileName = args[1];
 
 		Scanner scanner;
@@ -24,12 +25,43 @@ public class Ex5q6 {
 
 		String[] edges = getEdges(scanner);
 		initGraphTable();
+
+		int edgesPerThread = edges.length / numberOfThreads;
+
+		for (int threadIndex = 0; threadIndex < numberOfThreads; threadIndex++) {
+			int startIndex = threadIndex * edgesPerThread;
+			int count = edgesPerThread;
+
+			if (threadIndex == numberOfThreads - 1) {
+				count = edges.length - startIndex;
+			}
+			WorkerThread thread = new WorkerThread(startIndex, count, edges, numNodes);
+			threads[threadIndex] = thread;
+		}
+
+		long startTime = System.currentTimeMillis();
+
+		// start all threads
+		for (Thread thread : threads) {
+			thread.start();
+		}
+
+		// wait for all threads to finish
+		for (Thread thread : threads) {
+			try {
+				thread.join();
+			} catch (InterruptedException e) {
+			}
+		}
+
+		long totalMillis = System.currentTimeMillis() - startTime;
+		System.out.println("Total process time in milliseconds: " + totalMillis);
 	}
 
 	private static void initGraphTable() {
-		graph = new AtomicReferenceArray<>(numNodes);
+		GRAPH = new AtomicReferenceArray<>(numNodes);
 		for (int i = 0; i < numNodes; i++) {
-			graph.set(i, new LinkedList<Node>());
+			GRAPH.set(i, new LinkedList<Node>());
 		}
 	}
 
@@ -44,6 +76,45 @@ public class Ex5q6 {
 			edges[i] = scanner.nextLine();
 		}
 		return edges;
+	}
+}
+
+class WorkerThread extends Thread {
+	int startIndex;
+	int numEdgesToProcess;
+	String[] edges;
+	int numNodes;
+
+	public WorkerThread(int startIndex, int numEdgesToProcess, String[] edges, int numNodes) {
+		this.startIndex = startIndex;
+		this.numEdgesToProcess = numEdgesToProcess;
+		this.edges = edges;
+		this.numNodes = numNodes;
+	}
+
+	@Override
+	public void run() {
+		for (int i = startIndex; i < startIndex + numEdgesToProcess; i++) {
+			String[] tokens = edges[i].split(" ");
+			int sourceId = Integer.parseInt(tokens[1]);
+			int destId = Integer.parseInt(tokens[2]);
+			int weight = Integer.parseInt(tokens[3]);
+
+			int destBucket = hash(destId);
+			Node destNode = new Node(destId);
+			destNode = Ex5q6.GRAPH.get(destBucket).add(destNode);
+
+			int srcBucket = hash(sourceId);
+			Node sourceNode = new Node(sourceId);
+			sourceNode = Ex5q6.GRAPH.get(srcBucket).add(sourceNode);
+
+			Edge edge = new Edge(weight, destNode);
+			sourceNode.addEdge(edge);
+		}
+	}
+
+	private int hash(int id) {
+		return id % numNodes;
 	}
 }
 

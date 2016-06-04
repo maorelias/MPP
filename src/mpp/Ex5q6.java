@@ -8,7 +8,7 @@ import java.util.concurrent.locks.ReentrantLock;
 public class Ex5q6 {
 
 	private static int numNodes;
-	private AtomicReferenceArray<List<Node>> graph;
+	private static volatile AtomicReferenceArray<List<Node>> graph;
 
 	public static void main(String[] args) {
 		int numThreads = Integer.parseInt(args[0]);
@@ -23,6 +23,14 @@ public class Ex5q6 {
 		}
 
 		String[] edges = getEdges(scanner);
+		initGraphTable();
+	}
+
+	private static void initGraphTable() {
+		graph = new AtomicReferenceArray<>(numNodes);
+		for (int i = 0; i < numNodes; i++) {
+			graph.set(i, new LinkedList<Node>());
+		}
 	}
 
 	private static String[] getEdges(Scanner scanner) {
@@ -64,30 +72,32 @@ class Node {
 	public int getId() {
 		return id;
 	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		Node other = (Node) obj;
+		if (id != other.id)
+			return false;
+		return true;
+	}
 }
 
 interface List<T> {
-	void add(T item);
-
-	boolean remove(T item);
+	ListNode<T> add(T item);
 }
 
 class ListNode<T> {
 	private T value;
-	private ReentrantLock lock;
-	private ListNode<T> next;
+	private volatile ListNode<T> next;
 
 	public ListNode(T value) {
 		this.value = value;
-		lock = new ReentrantLock();
-	}
-
-	public void lock() {
-		lock.lock();
-	}
-
-	public void unlock() {
-		lock.unlock();
 	}
 
 	public T getValue() {
@@ -97,22 +107,45 @@ class ListNode<T> {
 	public void setNext(ListNode<T> next) {
 		this.next = next;
 	}
+
+	public ListNode<T> getNext() {
+		return next;
+	}
 }
 
 class LinkedList<T> implements List<T> {
 
-	private ListNode<T> head;
+	private volatile ReentrantLock lock;
+	private volatile ListNode<T> head;
 
-	@Override
-	public void add(T item) {
-		// TODO Auto-generated method stub
-
+	public LinkedList() {
+		lock = new ReentrantLock();
 	}
 
 	@Override
-	public boolean remove(T item) {
-		// TODO Auto-generated method stub
-		return false;
-	}
+	public ListNode<T> add(T item) {
+		lock.lock();
+		try {
+			ListNode<T> newNode = new ListNode<T>(item);
+			if (head == null) {
+				head = newNode;
+				return newNode;
+			} else {
+				ListNode<T> pred = null;
+				ListNode<T> curr = head;
+				while (curr != null) {
+					if (curr.getValue().equals(item)) {
+						return curr;
+					}
+					pred = curr;
+					curr = curr.getNext();
+				}
 
+				pred.setNext(newNode);
+				return newNode;
+			}
+		} finally {
+			lock.unlock();
+		}
+	}
 }

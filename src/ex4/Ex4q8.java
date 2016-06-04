@@ -1,4 +1,4 @@
-package mpp;
+package ex4;
 
 import java.util.Random;
 import java.util.concurrent.atomic.AtomicMarkableReference;

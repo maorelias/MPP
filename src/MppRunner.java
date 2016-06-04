@@ -1,5 +1,5 @@
-import mpp.Ex4q8;
-import mpp.Ex4q9;
+import ex4.Ex4q8;
+import ex4.Ex4q9;
 
 class MppRunner {
 

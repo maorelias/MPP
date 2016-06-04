@@ -55,7 +55,7 @@ public class Ex5q6 {
 		}
 
 		long totalMillis = System.currentTimeMillis() - startTime;
-		System.out.println("Total process time in milliseconds: " + totalMillis);
+		System.out.println("Total process time in ms for " + numberOfThreads + " threads: " + totalMillis);
 	}
 
 	private static void initGraphTable() {
@@ -114,7 +114,7 @@ class WorkerThread extends Thread {
 	}
 
 	private int hash(int id) {
-		return id % numNodes;
+		return id % Ex5q6.GRAPH.length();
 	}
 }
 

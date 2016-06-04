@@ -1,50 +1,19 @@
 import ex4.Ex4q8;
 import ex4.Ex4q9;
+import mpp.Ex5q6;
 
 class MppRunner {
 
 	public static void main(String[] args) {
 
-//		 Ex4q8.main(new String[] { "1", "1" });
-//		 Ex4q8.main(new String[] { "2", "1" });
-//		 Ex4q8.main(new String[] { "4", "1" });
-//		 Ex4q8.main(new String[] { "8", "1" });
-//		 Ex4q8.main(new String[] { "16", "1" });
-//		 Ex4q8.main(new String[] { "32", "1" });
-//
-//		 System.out.println("\n");
-//		
-//		 Ex4q8.main(new String[] { "1", "2" });
-//		 Ex4q8.main(new String[] { "2", "2" });
-//		 Ex4q8.main(new String[] { "4", "2" });
-//		 Ex4q8.main(new String[] { "8", "2" });
-//		 Ex4q8.main(new String[] { "16", "2" });
-//		 Ex4q8.main(new String[] { "32", "2" });
+		Ex5q6.main(new String[] { "1", "D:\\graph-10k.txt" });
+		Ex5q6.main(new String[] { "2", "D:\\graph-10k.txt" });
+		Ex5q6.main(new String[] { "4", "D:\\graph-10k.txt" });
+		Ex5q6.main(new String[] { "8", "D:\\graph-10k.txt" });
+		Ex5q6.main(new String[] { "16", "D:\\graph-10k.txt" });
+		Ex5q6.main(new String[] { "32", "D:\\graph-10k.txt" });
+		Ex5q6.main(new String[] { "64", "D:\\graph-10k.txt" });
 
-		Ex4q9.main(new String[] { "1", "1" });
-		Ex4q9.main(new String[] { "2", "1" });
-		Ex4q9.main(new String[] { "4", "1" });
-		Ex4q9.main(new String[] { "8", "1" });
-		Ex4q9.main(new String[] { "16", "1" });
-		Ex4q9.main(new String[] { "32", "1" });
-
-		System.out.println("\n");
-
-		Ex4q9.main(new String[] { "1", "2", "5", "10" });
-		Ex4q9.main(new String[] { "2", "2", "5", "10" });
-		Ex4q9.main(new String[] { "4", "2", "5", "10" });
-		Ex4q9.main(new String[] { "8", "2", "5", "10" });
-		Ex4q9.main(new String[] { "16", "2", "5", "10" });
-		Ex4q9.main(new String[] { "32", "2", "5", "10" });
-
-		System.out.println("\n");
-
-		Ex4q9.main(new String[] { "1", "2", "5", "3000" });
-		Ex4q9.main(new String[] { "2", "2", "5", "3000" });
-		Ex4q9.main(new String[] { "4", "2", "5", "3000" });
-		Ex4q9.main(new String[] { "8", "2", "5", "3000" });
-		Ex4q9.main(new String[] { "16", "2", "5", "3000" });
-		Ex4q9.main(new String[] { "32", "2", "5", "3000" });
 	}
 
 	// public static void main(String[] args) {

@@ -1,9 +1,15 @@
 package mpp;
 
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileReader;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Scanner;
 import java.util.concurrent.atomic.AtomicReferenceArray;
 import java.util.concurrent.locks.ReentrantLock;
+import java.util.stream.Stream;
 
 public class Ex5q6 {
 
@@ -15,15 +21,7 @@ public class Ex5q6 {
 		WorkerThread[] threads = new WorkerThread[numberOfThreads];
 		String fileName = args[1];
 
-		Scanner scanner;
-		try {
-			scanner = new Scanner(new File(fileName));
-		} catch (Exception e) {
-			System.out.println(e.getStackTrace());
-			return;
-		}
-
-		String[] edges = getEdges(scanner);
+		String[] edges = getEdges(fileName);
 		initGraphTable();
 
 		int edgesPerThread = edges.length / numberOfThreads;
@@ -65,16 +63,25 @@ public class Ex5q6 {
 		}
 	}
 
-	private static String[] getEdges(Scanner scanner) {
-		String line = scanner.nextLine();
-		String[] tokens = line.split(" ");
-		numNodes = Integer.parseInt(tokens[2]);
-		int numEdges = Integer.parseInt(tokens[3]);
-		String[] edges = new String[numEdges];
+	private static String[] getEdges(String fileName) {
+		String edges[] = null;
+		try (BufferedReader reader = Files.newBufferedReader(Paths.get(fileName))) {
+			String header = reader.readLine();
+			String[] tokens = header.split(" ");
 
-		for (int i = 0; i < numEdges; i++) {
-			edges[i] = scanner.nextLine();
+			numNodes = Integer.parseInt(tokens[2]);
+			int edgeCount = Integer.parseInt(tokens[3]);
+
+			edges = new String[edgeCount];
+			for (int i = 0; i < edgeCount; i++) {
+				edges[i] = reader.readLine();
+			}
+
+		} catch (Exception e) {
+			e.printStackTrace();
+			System.exit(0);
 		}
+
 		return edges;
 	}
 }

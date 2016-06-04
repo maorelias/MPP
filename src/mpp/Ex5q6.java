@@ -6,7 +6,6 @@ import java.nio.file.Paths;
 import java.util.concurrent.atomic.AtomicReferenceArray;
 import java.util.concurrent.locks.ReentrantLock;
 
-
 public class Ex5q6 {
 
 	private static int numNodes;
@@ -165,6 +164,8 @@ class Node {
 
 interface List<T> {
 	T add(T item);
+
+	T find(T item);
 }
 
 class ListNode<T> {
@@ -199,6 +200,11 @@ class LinkedList<T> implements List<T> {
 
 	@Override
 	public T add(T item) {
+		T result = find(item);
+		if (result != null) {
+			return result;
+		}
+
 		lock.lock();
 		try {
 			ListNode<T> newNode = new ListNode<T>(item);
@@ -222,5 +228,18 @@ class LinkedList<T> implements List<T> {
 		} finally {
 			lock.unlock();
 		}
+	}
+
+	@Override
+	public T find(T item) {
+		ListNode<T> curr = head;
+		while (curr != null) {
+			if (curr.getValue().equals(item)) {
+				return curr.getValue();
+			}
+			curr = curr.getNext();
+		}
+
+		return null;
 	}
 }

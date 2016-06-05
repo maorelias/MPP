@@ -54,7 +54,7 @@ public class Ex5q6 {
 	private static void initGraphTable() {
 		GRAPH = new AtomicReferenceArray<>(numNodes);
 		for (int i = 0; i < numNodes; i++) {
-			GRAPH.set(i, new LinkedList<Node>());
+			GRAPH.set(i, new SortedLinkedList<Node>());
 		}
 	}
 
@@ -130,7 +130,7 @@ class Edge {
 	}
 }
 
-class Node {
+class Node implements Comparable<Node> {
 	private int id;
 	List<Edge> edges;
 
@@ -148,24 +148,13 @@ class Node {
 	}
 
 	@Override
-	public boolean equals(Object obj) {
-		if (this == obj)
-			return true;
-		if (obj == null)
-			return false;
-		if (getClass() != obj.getClass())
-			return false;
-		Node other = (Node) obj;
-		if (id != other.id)
-			return false;
-		return true;
+	public int compareTo(Node other) {
+		return id - other.getId();
 	}
 }
 
 interface List<T> {
 	T add(T item);
-
-	T find(T item);
 }
 
 class ListNode<T> {
@@ -189,10 +178,63 @@ class ListNode<T> {
 	}
 }
 
+class SortedLinkedList<T extends Comparable<T>> extends LinkedList<T> {
+
+	@Override
+	public T add(T item) {
+
+		T result = find(item);
+		if (result != null) {
+			return result;
+		}
+
+		lock.lock();
+		try {
+			ListNode<T> newNode = new ListNode<T>(item);
+			if (head == null) {
+				head = newNode;
+				return newNode.getValue();
+			} else {
+				ListNode<T> pred = null;
+				ListNode<T> curr = head;
+				while (curr != null && curr.getValue().compareTo(item) <= 0) {
+					pred = curr;
+					curr = curr.getNext();
+				}
+
+				if (pred.getValue().compareTo(item) == 0) {
+					return pred.getValue();
+				}
+
+				pred.setNext(newNode);
+				newNode.setNext(curr);
+				return newNode.getValue();
+			}
+		} finally {
+			lock.unlock();
+		}
+	}
+
+	private T find(T item) {
+		ListNode<T> pred = null;
+		ListNode<T> curr = head;
+		while (curr != null && curr.getValue().compareTo(item) <= 0) {
+			pred = curr;
+			curr = curr.getNext();
+		}
+
+		if (pred != null && pred.getValue().compareTo(item) == 0) {
+			return pred.getValue();
+		}
+
+		return null;
+	}
+}
+
 class LinkedList<T> implements List<T> {
 
-	private volatile ReentrantLock lock;
-	private volatile ListNode<T> head;
+	protected volatile ReentrantLock lock;
+	protected volatile ListNode<T> head;
 
 	public LinkedList() {
 		lock = new ReentrantLock();
@@ -200,11 +242,6 @@ class LinkedList<T> implements List<T> {
 
 	@Override
 	public T add(T item) {
-		T result = find(item);
-		if (result != null) {
-			return result;
-		}
-
 		lock.lock();
 		try {
 			ListNode<T> newNode = new ListNode<T>(item);
@@ -228,18 +265,5 @@ class LinkedList<T> implements List<T> {
 		} finally {
 			lock.unlock();
 		}
-	}
-
-	@Override
-	public T find(T item) {
-		ListNode<T> curr = head;
-		while (curr != null) {
-			if (curr.getValue().equals(item)) {
-				return curr.getValue();
-			}
-			curr = curr.getNext();
-		}
-
-		return null;
 	}
 }

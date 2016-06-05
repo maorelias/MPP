@@ -249,18 +249,10 @@ class LinkedList<T> implements List<T> {
 				head = newNode;
 				return newNode.getValue();
 			} else {
-				ListNode<T> pred = null;
-				ListNode<T> curr = head;
-				while (curr != null) {
-					if (curr.getValue().equals(item)) {
-						return curr.getValue();
-					}
-					pred = curr;
-					curr = curr.getNext();
-				}
-
-				pred.setNext(newNode);
-				return newNode.getValue();
+				ListNode<T> next = head.getNext();
+				head.setNext(newNode);
+				newNode.setNext(next);
+				return item;
 			}
 		} finally {
 			lock.unlock();

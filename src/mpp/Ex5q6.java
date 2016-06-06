@@ -16,19 +16,25 @@ public class Ex5q6 {
 		WorkerThread[] threads = new WorkerThread[numberOfThreads];
 		String fileName = args[1];
 
+		// read all the lines of the edges
 		String[] edges = getEdges(fileName);
+
+		// create graph hash table
 		initGraphTable();
 
+		// divide work evenly
 		int edgesPerThread = edges.length / numberOfThreads;
 
 		for (int threadIndex = 0; threadIndex < numberOfThreads; threadIndex++) {
 			int startIndex = threadIndex * edgesPerThread;
 			int count = edgesPerThread;
 
+			// maybe numberOfThreads doesn'y divide #edges and therefore we need
+			// to consider the remaining edges for the last thread
 			if (threadIndex == numberOfThreads - 1) {
 				count = edges.length - startIndex;
 			}
-			WorkerThread thread = new WorkerThread(startIndex, count, edges, numNodes);
+			WorkerThread thread = new WorkerThread(startIndex, count, edges);
 			threads[threadIndex] = thread;
 		}
 
@@ -81,17 +87,18 @@ public class Ex5q6 {
 	}
 }
 
+/*
+ * Implementation of the working threads that process the graph file
+ */
 class WorkerThread extends Thread {
 	int startIndex;
 	int numEdgesToProcess;
 	String[] edges;
-	int numNodes;
 
-	public WorkerThread(int startIndex, int numEdgesToProcess, String[] edges, int numNodes) {
+	public WorkerThread(int startIndex, int numEdgesToProcess, String[] edges) {
 		this.startIndex = startIndex;
 		this.numEdgesToProcess = numEdgesToProcess;
 		this.edges = edges;
-		this.numNodes = numNodes;
 	}
 
 	@Override
@@ -102,19 +109,26 @@ class WorkerThread extends Thread {
 			int destId = Integer.parseInt(tokens[2]);
 			int weight = Integer.parseInt(tokens[3]);
 
+			// find destination node or add it if it's not in the relevant
+			// bucket
 			int destBucket = hash(destId);
 			Node destNode = new Node(destId);
 			destNode = Ex5q6.GRAPH.get(destBucket).add(destNode);
 
+			// find source node or add it if it's not in the relevant bucket
 			int srcBucket = hash(sourceId);
 			Node sourceNode = new Node(sourceId);
 			sourceNode = Ex5q6.GRAPH.get(srcBucket).add(sourceNode);
 
+			// add edge to the list of edges of the source node
 			Edge edge = new Edge(weight, destNode);
 			sourceNode.addEdge(edge);
 		}
 	}
 
+	/*
+	 * hash function to map the nodes to the hash table
+	 */
 	private int hash(int id) {
 		return id % Ex5q6.GRAPH.length();
 	}
@@ -147,16 +161,32 @@ class Node implements Comparable<Node> {
 		return id;
 	}
 
+	/*
+	 * used in order to sort the nodes in the sorted linked list
+	 * 
+	 * @see java.lang.Comparable#compareTo(java.lang.Object)
+	 */
 	@Override
 	public int compareTo(Node other) {
 		return id - other.getId();
 	}
 }
 
+/*
+ * The interface for the list classes
+ */
 interface List<T> {
+
+	/*
+	 * returns 'item' if it wasn't in the list, otherwise returns the relevant
+	 * element from the list
+	 */
 	T add(T item);
 }
 
+/*
+ * This class wraps the objects that are held in the linked lists
+ */
 class ListNode<T> {
 	private T value;
 	private volatile ListNode<T> next;
@@ -178,11 +208,16 @@ class ListNode<T> {
 	}
 }
 
+/*
+ * This class implements a sorted linked list - will be used to implements the
+ * buckets of the hash table
+ */
 class SortedLinkedList<T extends Comparable<T>> extends LinkedList<T> {
 
 	@Override
 	public T add(T item) {
 
+		// try to search for the node first, without locking
 		T result = find(item);
 		if (result != null) {
 			return result;
@@ -202,6 +237,7 @@ class SortedLinkedList<T extends Comparable<T>> extends LinkedList<T> {
 					curr = curr.getNext();
 				}
 
+				// maybe this node was added after calling 'find' method
 				if (pred.getValue().compareTo(item) == 0) {
 					return pred.getValue();
 				}
@@ -231,6 +267,10 @@ class SortedLinkedList<T extends Comparable<T>> extends LinkedList<T> {
 	}
 }
 
+/*
+ * This class implements a regular linked list - will be used to store the edges
+ * of each node of the graph
+ */
 class LinkedList<T> implements List<T> {
 
 	protected volatile ReentrantLock lock;
@@ -245,10 +285,13 @@ class LinkedList<T> implements List<T> {
 		lock.lock();
 		try {
 			ListNode<T> newNode = new ListNode<T>(item);
-			if (head == null) {
+			if (head == null) { // list is empty
 				head = newNode;
 				return newNode.getValue();
 			} else {
+
+				// list is not empty - append new node to the head of the list
+				// in time O(1)
 				ListNode<T> next = head.getNext();
 				head.setNext(newNode);
 				newNode.setNext(next);
